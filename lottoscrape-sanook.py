@@ -1,78 +1,143 @@
+from urllib.request import urlopen, Request
 from bs4 import BeautifulSoup
-from urllib.request import urlopen
-from datetime import datetime, timedelta
+import re
+import os
+import time
 
-# Lao lottery results URL pattern from Sanook.com
-# Example: http://news.sanook.com/lotto/check/13022569/ (for 13 Feb 2026)
-metaurl = "http://news.sanook.com/lotto/check/{:02d}{:02d}{}/"
+HEADERS = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
 
-'''
-# Generate links for Lao lottery draws (Monday, Wednesday, Friday)
-def generate_lao_lottery_links(start_date, end_date):
-    """Generate Lao lottery drawing dates between start_date and end_date
-    Lao lottery draws on Monday, Wednesday, Friday at 20:30"""
-    links = []
-    current = start_date
-    while current <= end_date:
-        # Monday=0, Wednesday=2, Friday=4
-        if current.weekday() in [0, 2, 4]:
-            day = current.day
-            month = current.month
-            year = current.year + 543  # Convert to Buddhist Era for URL
-            links.append(metaurl.format(day, month, year))
-        current += timedelta(days=1)
-    return links
+THAI_MONTHS = {
+    'มกราคม': 1, 'กุมภาพันธ์': 2, 'มีนาคม': 3, 'เมษายน': 4,
+    'พฤษภาคม': 5, 'มิถุนายน': 6, 'กรกฎาคม': 7, 'สิงหาคม': 8,
+    'กันยายน': 9, 'ตุลาคม': 10, 'พฤศจิกายน': 11, 'ธันวาคม': 12
+}
 
-links = generate_lao_lottery_links(
-    datetime(2024, 1, 1),  # Start date
-    datetime(2026, 12, 31)  # End date
-)
-'''
+def convert_be_to_ce(be_year):
+    return be_year - 543
 
-# Manual list of links to scrape (update with actual Lao lottery dates)
-links = [
-    "http://news.sanook.com/lotto/check/13022569/",  # 13 Feb 2026 (Friday)
-    "http://news.sanook.com/lotto/check/11022569/",  # 11 Feb 2026 (Wednesday)
-    "http://news.sanook.com/lotto/check/09022569/",  # 9 Feb 2026 (Monday)
-    # Add more links as needed
-]
-
-for link in links:
-    print("Scraping numbers from link {}".format(link))
+def scrape_lao_lottery(url):
+    """Scrape Lao lottery from Sanook laolotto page"""
     try:
-        pagename = link.split('/')[-2]
-        # Convert from BE year back to CE year for filename
-        # Format: DDMMYYYY (BE) -> YYYY-MM-DD (CE)
-        day = int(pagename[0:2])
-        month = int(pagename[2:4])
-        year = int(pagename[4:8]) - 543  # Convert BE to CE
-        pagename = '{:04d}-{:02d}-{:02d}'.format(year, month, day)
+        full_url = url if url.startswith('http') else f"https://www.sanook.com{url}"
         
-        page = urlopen(link).read()
-        soup = BeautifulSoup(page, "html.parser")
+        # Extract date from URL first (more reliable)
+        # URL format: /news/laolotto/DDMMYYYY/
+        url_date_match = re.search(r'/laolotto/(\d{2})(\d{2})(\d{4})/', full_url)
+        if url_date_match:
+            day = int(url_date_match.group(1))
+            month = int(url_date_match.group(2))
+            year_be = int(url_date_match.group(3))
+            year_ce = convert_be_to_ce(year_be)
+            expected_date_str = f"{year_ce:04d}-{month:02d}-{day:02d}"
         
-        # Lao lottery structure from Sanook.com
-        # The page shows: 6 digits, 5 digits, 4 digits, 3 digits, 2 digits
-        numbers = [num.string for num in soup.find_all(class_="lotto__number")]
+        req = Request(full_url, headers=HEADERS)
+        html = urlopen(req).read().decode('utf-8')
+        soup = BeautifulSoup(html, 'html.parser')
         
-        # Adjust based on actual Sanook Lao lottery page structure
-        # Typically: [6-digit, 5-digit, 4-digit, 3-digit, 2-digit]
-        six = numbers[0]
-        five = numbers[1]
-        four = numbers[2]
-        three = numbers[3]
-        two = numbers[4]
-
-        outfile = open("lottonumbers/" + pagename + ".txt", 'w')
-        outfile.write(link + '\n')
-        outfile.write("SIX " + str(six) + '\n')
-        outfile.write("FIVE " + str(five) + '\n')
-        outfile.write("FOUR " + str(four) + '\n')
-        outfile.write("THREE " + str(three) + '\n')
-        outfile.write("TWO " + str(two) + '\n')
-        outfile.close()
+        # Get full text
+        text = soup.get_text()
         
-        print("Scraped data from {} into lottonumbers/{}.txt".format(link, pagename))
+        # Extract lottery numbers using patterns
+        # Format: "เลขท้าย X ตัวNNNN" or "เลข X ตัว : NNNN"
+        four_match = re.search(r'เลขท้าย\s*4\s*ตัว\s*[:\s]*(\d{4})', text)
+        three_match = re.search(r'เลขท้าย\s*3\s*ตัว\s*[:\s]*(\d{3})', text)
+        two_match = re.search(r'เลขท้าย\s*2\s*ตัว\s*[:\s]*(\d{2})', text)
+        
+        # Also try alternative format with 6 digits
+        six_match = re.search(r'เลข\s*6\s*ตัว\s*[:\s]*(\d{6})', text)
+        five_match = re.search(r'เลข\s*5\s*ตัว\s*[:\s]*(\d{5})', text)
+        
+        if not (four_match or six_match):
+            print(f"  WARNING: No lottery numbers found")
+            return None
+        
+        result = {'date': expected_date_str}
+        if six_match:
+            result['SIX'] = six_match.group(1)
+        if five_match:
+            result['FIVE'] = five_match.group(1)
+        if four_match:
+            result['FOUR'] = four_match.group(1)
+        if three_match:
+            result['THREE'] = three_match.group(1)
+        if two_match:
+            result['TWO'] = two_match.group(1)
+        
+        return result
+        
     except Exception as e:
-        print("WARNING: " + link + " cannot be scraped with exception " + str(e) + ". Skipping.")
-        continue
+        print(f"  ERROR: {e}")
+        return None
+
+def save_result(result, output_dir='lottonumbers'):
+    os.makedirs(output_dir, exist_ok=True)
+    date_str = result.get('date')
+    if not date_str:
+        return False
+    
+    filename = os.path.join(output_dir, f"{date_str}.txt")
+    if os.path.exists(filename):
+        print(f"  SKIP: {date_str} already exists")
+        return False
+    
+    with open(filename, 'w', encoding='utf-8') as f:
+        # Source URL (reconstruct from date)
+        year_be = int(date_str[:4]) + 543
+        month = date_str[5:7]
+        day = date_str[8:10]
+        f.write(f"https://www.sanook.com/news/laolotto/{day}{month}{year_be}/\n")
+        
+        if 'SIX' in result:
+            f.write(f"SIX {result['SIX']}\n")
+        if 'FIVE' in result:
+            f.write(f"FIVE {result['FIVE']}\n")
+        if 'FOUR' in result:
+            f.write(f"FOUR {result['FOUR']}\n")
+        if 'THREE' in result:
+            f.write(f"THREE {result['THREE']}\n")
+        if 'TWO' in result:
+            f.write(f"TWO {result['TWO']}\n")
+    
+    print(f"  SAVED: {date_str} - FOUR:{result.get('FOUR', 'N/A')} THREE:{result.get('THREE', 'N/A')} TWO:{result.get('TWO', 'N/A')}")
+    return True
+
+def get_archive_links():
+    """Get Lao lottery links from archive page"""
+    try:
+        req = Request('https://www.sanook.com/news/archive/laolotto/', headers=HEADERS)
+        html = urlopen(req).read().decode('utf-8')
+        soup = BeautifulSoup(html, 'html.parser')
+        links = [a['href'] for a in soup.find_all('a', href=True) if a['href'].startswith('/news/laolotto/')]
+        return list(set(links))
+    except Exception as e:
+        print(f"ERROR fetching archive: {e}")
+        return []
+
+def main():
+    print("=" * 70)
+    print("Lao Lottery Scraper - Sanook.com")
+    print("Source: https://www.sanook.com/news/archive/laolotto/")
+    print("=" * 70)
+    
+    # Get links from archive
+    print("\n[1] Getting archive links...")
+    archive_links = get_archive_links()
+    print(f"Found {len(archive_links)} links")
+    
+    # Scrape each link
+    print("\n[2] Scraping lottery results...")
+    success = 0
+    for i, link in enumerate(archive_links, 1):
+        print(f"\n[{i}/{len(archive_links)}] {link}")
+        result = scrape_lao_lottery(link)
+        if result:
+            if save_result(result):
+                success += 1
+        time.sleep(0.5)
+    
+    print("\n" + "=" * 70)
+    print(f"Done! Scraped {success} new results")
+    print("=" * 70)
+
+if __name__ == "__main__":
+    main()
