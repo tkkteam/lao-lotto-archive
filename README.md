@@ -1,61 +1,47 @@
-# thai-lotto-archive
-Archive of winning Thai lottery numbers since 2007. All data are sourced from kapook.com, sanook.com, and other sources.
+# lao-lotto-archive
+Archive of winning Lao lottery numbers. All data are sourced from official Lao lottery websites, sanook.com, and other sources.
 
 ## File structure
-Each file in `lottonumbers` directory consist of winning numbers from each lotto drawing days, shown in a file name. The first line is a URL of website as a source for winning numbers data on the corresponding day. *On some lottery drawing days, data can not be properly scraped from either kapook.com or sanook.com, so they are recorded by hand from other sources.* One string precedes each line from the second line onwards, which labels other numbers on the line to each corresponding prize as follows:
+Each file in `lottonumbers` directory consists of winning numbers from each lotto drawing day, shown in a file name. The first line is a URL of website as a source for winning numbers data on the corresponding day. One string precedes each line from the second line onwards, which labels other numbers on the line to each corresponding prize as follows:
 
-* `FIRST`: First Prize, 1 number
-* *(Prior to 1 September 2015)* `THREE`: Three Digit Suffix 4 numbers
-* *(1 September 2015 onwards)* `THREE_FIRST`: Three Digit Prefix, 2 numbers
-* *(1 September 2015 onwards)* `THREE_LAST`: Three Digit Suffix, 2 numbers
-* `TWO`: Two Digit Suffix, 1 number
-* `NEAR_FIRST`: First Prize Neighbours (see section [Some information about Thai lottery](#some-information-about-thai-lottery)), 2 numbers
-* `SECOND`: Second Prize, 5 numbers
-* `THIRD`: Third Prize, 10 numbers
-* `FOURTH`: Fourth Prize, 50 numbers
-* `FIFTH`: Fifth Prize, 100 numbers
+* `SIX`: Six Digit Prize (1st Prize), 1 number
+* `FIVE`: Five Digit Prize (2nd Prize), 1 number
+* `FOUR`: Four Digit Prize (3rd Prize), 1 number
+* `THREE`: Three Digit Prize, 1 number
+* `TWO`: Two Digit Prize, 1 number
 
-## `lottoscraper.py` and `lottoscraper-sanook.py`
-This repo also contains two python scripts which I used to scrape all data from lottery checking pages at [kapook.com](http://lottery.kapook.com/) and [sanook.com](http://news.sanook.com/lotto/), and put them in a nice format under the directory `lottonumbers`. `lottoscraper.py` is tailored for web page format seen in kapook.com, while `lottoscraper-sanook.py` is for web page format seen in sanook.com. You will need Python 3 and [`BeautifulSoup`](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) in order to run the scripts.
+## `lottoscrape.py` and `lottoscrape-sanook.py`
+This repo also contains two python scripts which are used to scrape all data from lottery checking pages at various Lao lottery websites, and put them in a nice format under the directory `lottonumbers`. `lottoscrape.py` is tailored for official Lao lottery websites, while `lottoscrape-sanook.py` is for web page format seen in sanook.com. You will need Python 3 and [`BeautifulSoup`](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) in order to run the scripts.
 
 ## Archive in other formats
-* pandas DataFrame containing winning numbers can be obtained via `lottodataframe.py` (made by [@kittinan](https://github.com/kittinan) -- thank you!). To obtain the DataFrame: 
+* pandas DataFrame containing winning numbers can be obtained via `lottodataframe.py`. To obtain the DataFrame:
     ```python
     import lottodataframe
     lottodataframe.get_lotto_df()
     ```
-    *Winning numbers in this DataFrame will only include first prize winning number, as well as last two winning digits, first three winning digits, and last three winning digits.*
+    *Winning numbers in this DataFrame will include six digit, five digit, four digit, three digit, and two digit winning numbers.*
 * If you would like to provide code for other formats, you may submit a pull request with provided code. Please keep in mind that the code must be able to generate the latest winning numbers according to the archive.
 
-## Some information about Thai lottery
-Thailand's Government Lottery Office (GLO) draws winning lottery numbers on the 1st and 16th of every month, with a few exceptions as follows:
+## Some information about Lao lottery
+Lao Lottery is operated by the Ministry of Finance of Lao PDR (Lottery Development Enterprise). The lottery draws take place three times per week on Monday, Wednesday, and Friday at 20:30 (8:30 PM) local time, broadcast live on Lao National Television Channel 1.
 
-* Lottery drawings on 1 January (New year's day) are scheduled on 30 December, two days before the 1 January.
-* Lottery drawings on 16 January (Teacher's day) are scheduled on 17 January.
-* Lottery drawings on 1 May (Labour day) are scheduled on 2 May.
+Each Lao lottery ticket contains six digits. The prize structure is based on matching the last digits of the winning number, with prizes awarded as follows:
 
-Each Thai lottery contains six digits, resulting in one million combinations in total. A list of prizes are as follows:
+* **Six Digit Prize (1st Prize)** - Match all 6 digits in exact order
+* **Five Digit Prize (2nd Prize)** - Match the last 5 digits in exact order
+* **Four Digit Prize (3rd Prize)** - Match the last 4 digits in exact order
+* **Three Digit Prize** - Match the last 3 digits in exact order
+* **Two Digit Prize** - Match the last 2 digits in exact order
 
-* **First Prize** with 1 winning number.
-* **First Prize Neighbours** which are an increment or decrement of the winning number of the First Prize by 1, comprising of 2 winning numbers. For example, if the First Prize winning number is 123456, the numbers belonging to this prize will be 123455 and 123457.
-* **Second Prize** with 5 winning numbers.
-* **Third Prize** with 10 winning numbers.
-* **Fourth Prize** with 50 winning numbers.
-* **Fifth Prize** with 100 winning numbers.
-* (Prior to 1 September 2015) **Three Digit Suffix** with 4 winning numbers.
-* (1 September 2015 onwards) **Three Digit *Prefix*** with 2 winning numbers.
-* (1 September 2015 onwards) **Three Digit *Suffix*** with 2 winning numbers.
-* **Two Digit Suffix** with 1 winning number.
+The ticket price is 1,000 LAK (Lao Kip) per bet, and all purchases are made exclusively online through the official lottery system.
 
-For more information, see https://th.wikipedia.org/wiki/หวยในประเทศไทย (Thai Wikipedia)
+For more information, see https://today.line.me/th/v3/article/nX5yxjM
 
-## Extraordinary rescheduling of lottery drawing dates
-Some lottery drawing dates are postponed due to several reasons, most commonly being the drawing date coincide with Thai Buddhist holiday, which is based on lunar calendar and not the same date on Gregorian calendar every year. Here are the lottery drawing dates that are postponed in the past or being rescheduled.
+## Drawing Schedule
+Lao Lottery draws occur on the following schedule:
 
-* Lottery drawing on 1 June 2015 was held on 2 June on the same year, since 1 June 2015 was Visakha Bucha day as Thai official holiday.
-* Lottery drawing on 16 December 2015 was held on 17 December, since the funeral for Somdet Phra Yannasangwon, Supreme Patriarch of Thailand took place on that day.
-* Lottery drawing on 1 March 2018 was held on 2 March, since 1 March 2018 was Makha Bucha day as Thai official holiday.
-* Lottery drawing on 16 July 2019 was held on 15 July, since 16 July 2019 was Asalaha Bucha day as Thai official holiday, and 17 July 2019 was Buddhist Lent day as another Thai official holiday.
-* Lottery drawing on 1 April 2020 was held on 16 May. Due to concerns regarding COVID-19 outbreak, GLO postponed lottery drawing on 1 April to 16 May, and no lottery tickets for 16 April, 1 May, and 16 May lottery drawings are sold.
-* Lottery drawing on 16 February 2022 was held on 17 February, since 16 February 2022 was Makha Bucha day as Thai official holiday.
-* Lottery drawing on 30 December 2024 was postponed by GLO to 2 January 2025.
+* **Days:** Monday, Wednesday, and Friday every week
+* **Time:** 20:30 (8:30 PM) Lao time (same as Thailand time)
+* **Broadcast:** Live on Lao National Radio and Lao National Television Channel 1
+
+The Lao lottery operates year-round without the special holiday rescheduling that affects Thai lottery.
