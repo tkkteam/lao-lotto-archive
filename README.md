@@ -1,47 +1,51 @@
 # lao-lotto-archive
-Archive of winning Lao lottery numbers. All data are sourced from official Lao lottery websites, sanook.com, and other sources.
+คลังข้อมูลรางวัลสลากกินแบ่งลาว ทั้งหมดรวบรวมมาจากเว็บไซต์สลากกินแบ่งลาวทางการ, sanook.com และแหล่งข้อมูลอื่นๆ
 
-## File structure
-Each file in `lottonumbers` directory consists of winning numbers from each lotto drawing day, shown in a file name. The first line is a URL of website as a source for winning numbers data on the corresponding day. One string precedes each line from the second line onwards, which labels other numbers on the line to each corresponding prize as follows:
+## โครงสร้างไฟล์
+แต่ละไฟล์ในไดเรกทอรี `lottonumbers` ประกอบด้วยรางวัลจากวันออกรางวัลสลากกินแบ่ง โดยชื่อไฟล์แสดงวันที่ บรรทัดแรกเป็น URL ของเว็บไซต์ที่เป็นแหล่งข้อมูลรางวัลในวันนั้นๆ บรรทัดที่สองเป็นต้นไปจะมีคำนำหน้าแต่ละบรรทัดซึ่งระบุประเภทของรางวัลดังนี้:
 
-* `SIX`: Six Digit Prize (1st Prize), 1 number
-* `FIVE`: Five Digit Prize (2nd Prize), 1 number
-* `FOUR`: Four Digit Prize (3rd Prize), 1 number
-* `THREE`: Three Digit Prize, 1 number
-* `TWO`: Two Digit Prize, 1 number
+* `SIX`: รางวัล 6 ตัว (รางวัลที่ 1), 1 รางวัล
+* `FIVE`: รางวัล 5 ตัว (รางวัลที่ 2), 1 รางวัล
+* `FOUR`: รางวัล 4 ตัว (รางวัลที่ 3), 1 รางวัล
+* `THREE`: รางวัล 3 ตัว, 1 รางวัล
+* `TWO`: รางวัล 2 ตัว, 1 รางวัล
 
-## `lottoscrape.py` and `lottoscrape-sanook.py`
-This repo also contains two python scripts which are used to scrape all data from lottery checking pages at various Lao lottery websites, and put them in a nice format under the directory `lottonumbers`. `lottoscrape.py` is tailored for official Lao lottery websites, while `lottoscrape-sanook.py` is for web page format seen in sanook.com. You will need Python 3 and [`BeautifulSoup`](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) in order to run the scripts.
+## `lottoscrape.py` และ `lottoscrape-sanook.py`
+Repository นี้มี Python scripts 2 ไฟล์ที่ใช้สำหรับดึงข้อมูลรางวัลจากเว็บไซต์สลากกินแบ่งลาวหลายเว็บไซต์ และจัดเก็บในรูปแบบที่เหมาะสมในไดเรกทอรี `lottonumbers`
+- `lottoscrape.py` ออกแบบมาสำหรับเว็บไซต์สลากกินแบ่งลาวทางการ
+- `lottoscrape-sanook.py` ออกแบบมาสำหรับเว็บไซต์ sanook.com
 
-## Archive in other formats
-* pandas DataFrame containing winning numbers can be obtained via `lottodataframe.py`. To obtain the DataFrame:
+คุณจะต้องติดตั้ง Python 3 และ [`BeautifulSoup`](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) เพื่อรันสคริปต์เหล่านี้
+
+## ข้อมูลในรูปแบบอื่น
+* DataFrame ของ pandas ที่ประกอบด้วยรางวัล สามารถสร้างได้ผ่าน `lottodataframe.py`:
     ```python
     import lottodataframe
     lottodataframe.get_lotto_df()
     ```
-    *Winning numbers in this DataFrame will include six digit, five digit, four digit, three digit, and two digit winning numbers.*
-* If you would like to provide code for other formats, you may submit a pull request with provided code. Please keep in mind that the code must be able to generate the latest winning numbers according to the archive.
+    *DataFrame นี้จะรวมถึงรางวัล 6 ตัว, 5 ตัว, 4 ตัว, 3 ตัว และ 2 ตัว*
+* หากคุณต้องการเพิ่มโค้ดสำหรับรูปแบบไฟล์อื่นๆ คุณสามารถส่ง pull request ได้ โปรดตรวจสอบว่าโค้ดสามารถสร้างข้อมูลรางวัลล่าสุดได้ตามข้อมูลใน archive
 
-## Some information about Lao lottery
-Lao Lottery is operated by the Ministry of Finance of Lao PDR (Lottery Development Enterprise). The lottery draws take place three times per week on Monday, Wednesday, and Friday at 20:30 (8:30 PM) local time, broadcast live on Lao National Television Channel 1.
+## ข้อมูลเกี่ยวกับสลากกินแบ่งลาว
+สลากกินแบ่งลาวดำเนินงานโดยกระทรวงการคลังแห่ง สปป. ลาว (วิสาหกิจพัฒนาลอตเตอรี) การออกรางวัลเกิดขึ้นสัปดาห์ละ 3 ครั้ง ในวันจันทร์ พุธ และศุกร์ เวลา 20:30 น. (2 ทุ่ม) ตามเวลาท้องถิ่น ถ่ายทอดสดทางสถานีโทรทัศน์แห่งชาติลาว ช่อง 1
 
-Each Lao lottery ticket contains six digits. The prize structure is based on matching the last digits of the winning number, with prizes awarded as follows:
+สลากกินแบ่งลาวแต่ละใบมี 6 หลัก โครงสร้างรางวัลอิงตามการจับคู่ตัวเลขท้ายของรางวัล ดังนี้:
 
-* **Six Digit Prize (1st Prize)** - Match all 6 digits in exact order
-* **Five Digit Prize (2nd Prize)** - Match the last 5 digits in exact order
-* **Four Digit Prize (3rd Prize)** - Match the last 4 digits in exact order
-* **Three Digit Prize** - Match the last 3 digits in exact order
-* **Two Digit Prize** - Match the last 2 digits in exact order
+* **รางวัล 6 ตัว (รางวัลที่ 1)** - ถูกรางวัลทั้ง 6 หลักตามลำดับ
+* **รางวัล 5 ตัว (รางวัลที่ 2)** - ถูกรางวัล 5 หลักท้ายตามลำดับ
+* **รางวัล 4 ตัว (รางวัลที่ 3)** - ถูกรางวัล 4 หลักท้ายตามลำดับ
+* **รางวัล 3 ตัว** - ถูกรางวัล 3 หลักท้ายตามลำดับ
+* **รางวัล 2 ตัว** - ถูกรางวัล 2 หลักท้ายตามลำดับ
 
-The ticket price is 1,000 LAK (Lao Kip) per bet, and all purchases are made exclusively online through the official lottery system.
+ราคาตั๋วอยู่ที่ 1,000 กีบ (เงินกีบลาว) ต่อบท และซื้อผ่านระบบลอตเตอรีทางการเท่านั้น
 
-For more information, see https://today.line.me/th/v3/article/nX5yxjM
+สำหรับข้อมูลเพิ่มเติม ดูได้ที่ https://today.line.me/th/v3/article/nX5yxjM
 
-## Drawing Schedule
-Lao Lottery draws occur on the following schedule:
+## ตารางการออกรางวัล
+สลากกินแบ่งลาวออกรางวัลตามตารางดังนี้:
 
-* **Days:** Monday, Wednesday, and Friday every week
-* **Time:** 20:30 (8:30 PM) Lao time (same as Thailand time)
-* **Broadcast:** Live on Lao National Radio and Lao National Television Channel 1
+* **วัน:** จันทร์ พุธ และศุกร์ ทุกสัปดาห์
+* **เวลา:** 20:30 น. (2 ทุ่ม) ตามเวลาลาว (ตรงกับเวลาไทย)
+* **การถ่ายทอดสด:** ทางสถานีวิทยุและโทรทัศน์แห่งชาติลาว ช่อง 1
 
-The Lao lottery operates year-round without the special holiday rescheduling that affects Thai lottery.
+สลากกินแบ่งลาวดำเนินงานตลอดทั้งปี โดยไม่มีวันหยุดพิเศษเหมือนสลากกินแบ่งไทย
