@@ -3,7 +3,7 @@ name: Auto Update Lao Lottery
 on:
   schedule:
     # รันทุกวันจันทร์-เสาร์ เวลา 13:30 UTC (20:30 เวลาไทย) หยุดวันอาทิตย์
-    - cron: '30 13 * * 1-5'
+    - cron: '30 14 * * 1-5'
   workflow_dispatch:  # รันด้วยมือได้
 
 jobs:
