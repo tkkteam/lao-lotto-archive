@@ -2,11 +2,19 @@ name: Auto Update Lao Lottery
 
 on:
   schedule:
-   cron: '10 14 * * 1-5'
+    # จันทร์-เสาร์ เวลา 20:40 ไทย (13:40 UTC)
+    - cron: '40 13 * * 1-5'
   workflow_dispatch:
+
+concurrency:
+  group: lottery-job
+  cancel-in-progress: true
+
 jobs:
   update-lottery:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+
     permissions:
       contents: write
 
@@ -14,7 +22,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: true
 
       - name: Set up Python
@@ -24,19 +31,35 @@ jobs:
 
       - name: Install dependencies
         run: |
+          set -e
+          pip install --upgrade pip
           pip install beautifulsoup4 lxml
+
       - name: Run lottery scraper
         run: |
-          echo "Starting lottery
- scraper..."
+          set -e
+          echo "=== START SCRAPER ==="
           python lottoscrape-sanook.py
-          echo "Scraper exit code: $?"
+          echo "=== END SCRAPER ==="
+
+      - name: Debug output files
+        run: |
+          echo "=== FILES IN REPO ==="
+          ls -la
+          echo "=== FILES IN lottonumbers ==="
+          ls -la lottonumbers || echo "No folder found"
 
       - name: Commit and push if changed
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add lottonumbers/
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update: $(date '+%Y-%m-%d %H:%M:%S')" && git push origin HEAD:$(git rev-parse --abbrev-ref HEAD))
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          set -e
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add lottonumbers/ || true
+
+          if git diff --quiet && git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Auto-update: $(date '+%Y-%m-%d %H:%M:%S')"
+            git push
+          fi
