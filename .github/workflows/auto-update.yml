@@ -3,7 +3,7 @@ name: Auto Update Lao Lottery
 on:
   schedule:
     # จันทร์-เสาร์ เวลา 20:40 ไทย (13:40 UTC)
-    - cron: '40 13 * * 1-5'
+    - cron: '*/2 * * * *'
   workflow_dispatch:
 
 concurrency:
