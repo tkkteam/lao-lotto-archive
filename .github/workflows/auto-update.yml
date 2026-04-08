@@ -2,7 +2,7 @@ name: Auto Update Lao Lottery
 
 on:
   schedule:
-    cron: '*/3 * * * *'
+   cron: '10 14 * * 1-5'
   workflow_dispatch:
 jobs:
   update-lottery:
