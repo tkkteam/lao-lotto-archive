@@ -1,8 +1,6 @@
 name: Auto Update Lao Lottery
 
 on:
-  schedule:
-  - cron: '30 13 * * 1-5'
   workflow_dispatch:
 
 concurrency:
@@ -21,7 +19,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
-          persist-credentials: true
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -31,14 +29,14 @@ jobs:
       - name: Install dependencies
         run: |
           set -e
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install beautifulsoup4 lxml
 
       - name: Run lottery scraper
         run: |
           set -e
           echo "=== START SCRAPER ==="
-          python lottoscrape-sanook.py
+          python lottoscrape-sanook.py || exit 1
           echo "=== END SCRAPER ==="
 
       - name: Debug output files
@@ -60,5 +58,6 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "Auto-update: $(date '+%Y-%m-%d %H:%M:%S')"
+            git pull --rebase
             git push
           fi
